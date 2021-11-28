@@ -9,7 +9,6 @@ class Board:
             self.setupBoard()
         else:
             self.clearBoard()
-        
 
     def __str__(self) -> str:
         board = ""
@@ -19,7 +18,7 @@ class Board:
                 row += str(self.pieces[i][j])
             row += '\n'
             board += row
-        return board
+        return board[:-1] # Remove trailing newline
 
     def clearBoard(self) -> None:
         self.pieces = []
@@ -44,6 +43,28 @@ class Board:
             [Piece(Chessman.ROOK, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN, Colour.WHITE), Piece(Chessman.KING, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)]
         ]
 
+    def getPiece(self, rank : int, file : int) -> Piece:
+        if rank < 0 or rank >= self.width:
+            raise ValueError("rank out of range: Please give a value between {0}-{self.width}. Value given: {rank}")
 
-    def getPiece(self, row : int, col : int) -> Piece:
-        return self.pieces[row][col]
+        if file < 0 or file >= self.width:
+            raise ValueError("file out of range: Please give a value between {0}-{self.height}. Value given: {file}")
+
+        return self.pieces[rank][file]
+
+    def movePiece(self, srcRank : int, srcFile : int, destRank : int, destFile : int) -> None:
+        if srcRank < 0 or srcRank >= self.width:
+            raise ValueError("srcRank out of range: Please give a value between {0}-{self.width}. Value given: {srcRank}")
+
+        if srcFile < 0 or srcFile >= self.height:
+            raise ValueError("srcFile out of range: Please give a value between {0}-{self.height}. Value given: {srcFile}")
+
+        if destRank < 0 or destRank >= self.width:
+            raise ValueError("destRank out of range: Please give a value between {0}-{self.width}. Value given: {destRank}")
+
+        if destFile < 0 or destFile >= self.height:
+            raise ValueError("destFile out of range: Please give a value between {0}-{self.height}. Value given: {destFile}")
+
+        p = self.pieces[srcRank][srcFile]
+        self.pieces[srcRank][srcFile] = Piece()
+        self.pieces[destRank][destFile] = p
