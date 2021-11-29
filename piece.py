@@ -65,6 +65,9 @@ class Piece:
         else:
             raise ValueError("Colour not an expected value!")
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
     def setPos(self, pos : Pos) -> None:
         self.pos = pos
 

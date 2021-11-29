@@ -151,5 +151,8 @@ class Pos():
     def __str__(self) -> str:
         return str(self.rank + 1) + chr(self.file + 97)
 
+    def __repr__(self) -> str:
+        return self.__str__()
+
 class ActionType(enum.Enum):
     NO_ACTION = enum.auto()

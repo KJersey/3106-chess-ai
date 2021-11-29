@@ -1,4 +1,5 @@
 from typing import List
+import numpy as np
 from piece import *
 
 class Board:
@@ -12,6 +13,7 @@ class Board:
 
         self.width = width
         self.height = height
+        self.flipped = False
 
         if self.width == 8 and self.height == 8:
             self.setupBoard()
@@ -21,11 +23,15 @@ class Board:
     def __str__(self) -> str:
         board = ""
 
+        pieces = self.pieces
+        if self.flipped:
+            pieces = np.flip(pieces)
+
         for rank in range(self.height):
-            row = str(rank + 1) + "│" + ANSIColours.fgBrightBlack
+            row = (str(self.height - rank) if self.flipped else str(rank + 1)) + "│" + ANSIColours.fgBrightBlack
             for file in range(self.width):
                 row += ANSIColours.bgBlack if (rank + file) % 2 else ANSIColours.bgWhite # ANSI Background colours
-                row += str(self.pieces[rank][file]) + ' '
+                row += str(pieces[rank][file]) + ' '
                 
             row += ANSIColours.reset + "\n" # Reset background colour
             board += row
@@ -38,7 +44,7 @@ class Board:
         board += '\n │'
 
         for file in range(self.width):
-            board += chr(file + 97) + ' '
+            board += chr(96 + (self.width - file if self.flipped else file + 1)) + ' '
 
         return board
 
@@ -96,14 +102,16 @@ class Board:
         piece = self.pieces[srcPos.rank][srcPos.file]
 
         if piece.chessman == Chessman.EMPTY:
-            print("Empty Piece")
             return False
 
         self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
-        self.pieces[destPos.file][destPos.file] = piece
+        self.pieces[destPos.rank][destPos.file] = piece
         piece.setPos(destPos)
 
         return True
+
+    def flipBoard(self) -> None:
+        self.flipped = not self.flipped
 
     # TODO: Fill these in
     def isFinished(self):
