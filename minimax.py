@@ -17,7 +17,7 @@ def maxAlphaBeta(board, alpha, beta, depth):
     
     optimalVal = None
     optimalAct = None
-    for act in board.getActions(Colour.WHITE):
+    for act in board.getActions(board.getAiColour()):
         childVal, childAct = minAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
         if optimalVal is None or childVal > optimalVal:
             optimalVal = childVal
@@ -43,7 +43,7 @@ def minAlphaBeta(board, alpha, beta, depth):
     
     optimalVal = None
     optimalAct = None
-    for act in board.getActions(Colour.BLACK):
+    for act in board.getActions(board.getPlayerColour()):
         childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
         if optimalVal is None or childVal < optimalVal:
             optimalVal = childVal

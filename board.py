@@ -3,7 +3,7 @@ import numpy as np
 from piece import *
 
 class Board:
-    def __init__(self, width : int = 8, height : int = 8):
+    def __init__(self, width : int = 8, height : int = 8, playerColour : Colour = Colour.BLACK):
 
         if width <= 0 or width > 26:
             raise ValueError(f"width out of range: Please enter a value between 0-26, Value given: {width}")
@@ -14,6 +14,7 @@ class Board:
         self.width = width
         self.height = height
         self.flipped = False
+        self.playerColour = playerColour
 
         if self.width == 8 and self.height == 8:
             self.setupBoard()
@@ -47,6 +48,15 @@ class Board:
             board += chr(96 + (self.width - file if self.flipped else file + 1)) + ' '
 
         return board
+    
+    def getPlayerColour(self):
+        return self.playerColour
+
+    def getAiColour(self):
+        if self.playerColour == Colour.WHITE:
+            return Colour.BLACK
+        else:
+            return self.playerColour
 
     def clearBoard(self) -> None:
         self.pieces = []
