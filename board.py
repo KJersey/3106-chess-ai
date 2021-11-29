@@ -1,7 +1,15 @@
+from typing import List
 from piece import *
 
 class Board:
     def __init__(self, width : int = 8, height : int = 8):
+
+        if width <= 0 or width > 26:
+            raise ValueError(f"width out of range: Please enter a value between 0-26, Value given: {width}")
+
+        if height <= 0 or height > 9:
+            raise ValueError(f"width out of range: Please enter a value between 0-9, Value given: {height}")
+
         self.width = width
         self.height = height
 
@@ -12,13 +20,27 @@ class Board:
 
     def __str__(self) -> str:
         board = ""
-        for i in range(self.height):
-            row = ""
-            for j in range(self.width):
-                row += str(self.pieces[i][j])
-            row += '\n'
+
+        for rank in range(self.height):
+            row = str(rank + 1) + "│" + ANSIColours.fgBrightBlack
+            for file in range(self.width):
+                row += ANSIColours.bgBlack if (rank + file) % 2 else ANSIColours.bgWhite # ANSI Background colours
+                row += str(self.pieces[rank][file]) + ' '
+                
+            row += ANSIColours.reset + "\n" # Reset background colour
             board += row
-        return board[:-1] # Remove trailing newline
+
+
+        board += "─┼"
+        for i in range(self.width):
+            board += '──'
+
+        board += '\n │'
+
+        for file in range(self.width):
+            board += chr(file + 97) + ' '
+
+        return board
 
     def clearBoard(self) -> None:
         self.pieces = []
@@ -43,42 +65,67 @@ class Board:
             [Piece(Chessman.ROOK, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN, Colour.WHITE), Piece(Chessman.KING, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)]
         ]
 
+        for i in range(8):
+            for j in range(8):
+                self.pieces[i][j].setPos(Pos(i + 1, j + 1))
+
     def getPiece(self, rank : int, file : int) -> Piece:
         if rank < 0 or rank >= self.width:
-            raise ValueError("rank out of range: Please give a value between {0}-{self.width}. Value given: {rank}")
+            raise ValueError(f"rank out of range: Please give a value between {0}-{self.width}. Value given: {rank}")
 
         if file < 0 or file >= self.width:
-            raise ValueError("file out of range: Please give a value between {0}-{self.height}. Value given: {file}")
+            raise ValueError(f"file out of range: Please give a value between {0}-{self.height}. Value given: {file}")
 
         return self.pieces[rank][file]
 
-    def movePiece(self, srcRank : int, srcFile : int, destRank : int, destFile : int) -> None:
-        if srcRank < 0 or srcRank >= self.width:
-            raise ValueError("srcRank out of range: Please give a value between {0}-{self.width}. Value given: {srcRank}")
+    def movePiece(self, srcPos : Pos, destPos : Pos) -> bool:
+        if srcPos.rank < 0 or srcPos.rank >= self.width:
+            raise ValueError(f"srcPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {srcPos.rank}")
 
-        if srcFile < 0 or srcFile >= self.height:
-            raise ValueError("srcFile out of range: Please give a value between {0}-{self.height}. Value given: {srcFile}")
+        if srcPos.file < 0 or srcPos.file >= self.height:
+            raise ValueError(f"srcPos File out of range: Please give a value between {0}-{self.height}. Value given: {srcPos.file}")
 
-        if destRank < 0 or destRank >= self.width:
-            raise ValueError("destRank out of range: Please give a value between {0}-{self.width}. Value given: {destRank}")
+        if destPos.rank < 0 or destPos.rank >= self.width:
+            raise ValueError(f"destPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {destPos.rank}")
 
-        if destFile < 0 or destFile >= self.height:
-            raise ValueError("destFile out of range: Please give a value between {0}-{self.height}. Value given: {destFile}")
+        if destPos.file < 0 or destPos.file >= self.height:
+            raise ValueError(f"destPos File out of range: Please give a value between {0}-{self.height}. Value given: {destPos.file}")
 
-        p = self.pieces[srcRank][srcFile]
-        self.pieces[srcRank][srcFile] = Piece()
-        self.pieces[destRank][destFile] = p
+        # TODO: Implement actual legality checking. Currently just moves piece
+
+        piece = self.pieces[srcPos.rank][srcPos.file]
+
+        if piece.chessman == Chessman.EMPTY:
+            print("Empty Piece")
+            return False
+
+        self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
+        self.pieces[destPos.file][destPos.file] = piece
+        piece.setPos(destPos)
+
+        return True
 
     # TODO: Fill these in
     def isFinished(self):
         # If no actions left (either white or black has won)
         return False
 
+    def getPieces(self, playerColour : Colour) -> List[Piece]:
+
+        pieces = []
+
+        for rank in self.pieces:
+            for piece in rank:
+                if piece.colour == playerColour:
+                    pieces.append(piece)
+
+        return pieces
+
     def gameScore(self):
         # Heuristic value if game not done, or final game value if game is done
         return False
 
-    def getActions(self, playerColour):
+    def getActions(self, playerColour : Colour):
         # Return all possible actions from player
         actions = []
         return actions
