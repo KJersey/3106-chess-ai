@@ -10,6 +10,7 @@ def maxAlphaBeta(board, alpha, beta, depth):
     :input alpha: alpha value int
     :input beta: beta value int
     :input depth: int remaning depth of children
+    :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
         return board.gameScore(), Action()
@@ -35,6 +36,7 @@ def minAlphaBeta(board, alpha, beta, depth):
     :input alpha: alpha value int
     :input beta: beta value int
     :input depth: int remaning depth of children
+    :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
       return board.gameScore(), Action()
@@ -54,4 +56,9 @@ def minAlphaBeta(board, alpha, beta, depth):
     return optimalVal, optimalAct
 
 def startMininmax(board):
+    '''
+    Estimate optimal value and action for ai using fixed depth.
+    :input board: Board instance
+    :return: optimal value and Action instance
+    '''
     value, action = maxAlphaBeta(board, -math.inf, math.inf, DEPTH)
