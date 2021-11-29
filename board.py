@@ -68,3 +68,21 @@ class Board:
         p = self.pieces[srcRank][srcFile]
         self.pieces[srcRank][srcFile] = Piece()
         self.pieces[destRank][destFile] = p
+
+    # TODO: Fill these in
+    def isFinished(self):
+        # If no actions left (either white or black has won)
+        return False
+
+    def gameScore(self):
+        # Heuristic value if game not done, or final game value if game is done
+        return False
+
+    def getActions(self, playerColour):
+        # Return all possible actions from player
+        actions = []
+        return actions
+
+    def childBoard(self, action):
+        # Initialize and return new board with same state, but affected by input action
+        return self
