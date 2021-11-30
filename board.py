@@ -1,6 +1,8 @@
 from typing import List
 import numpy as np
+
 from piece import *
+from action import *
 
 class Board:
     def __init__(self, width : int = 8, height : int = 8, playerColour : Colour = Colour.BLACK):
@@ -13,8 +15,8 @@ class Board:
 
         self.width = width
         self.height = height
-        self.flipped = False
         self.playerColour = playerColour
+        self.flipped = False
 
         if self.width == 8 and self.height == 8:
             self.setupBoard()
@@ -22,32 +24,35 @@ class Board:
             self.clearBoard()
 
     def __str__(self) -> str:
-        board = ""
+        s = ""
 
         pieces = self.pieces
         if self.flipped:
             pieces = np.flip(pieces)
 
+        board = ""
+
         for rank in range(self.height):
             row = (str(self.height - rank) if self.flipped else str(rank + 1)) + "│" + ANSIColours.fgBrightBlack
             for file in range(self.width):
-                row += ANSIColours.bgBlack if (rank + file) % 2 else ANSIColours.bgWhite # ANSI Background colours
+                row += ANSIColours.bgWhite if (rank + file) % 2 else ANSIColours.bgBlack # ANSI Background colours
                 row += str(pieces[rank][file]) + ' '
                 
             row += ANSIColours.reset + "\n" # Reset background colour
-            board += row
+            board = row + board
 
+        s += board
 
-        board += "─┼"
-        for i in range(self.width):
-            board += '──'
+        s += "─┼"
+        for _ in range(self.width):
+            s += '──'
 
-        board += '\n │'
+        s += '\n │'
 
         for file in range(self.width):
-            board += chr(96 + (self.width - file if self.flipped else file + 1)) + ' '
+            s += chr(96 + (self.width - file if self.flipped else file + 1)) + ' '
 
-        return board
+        return s
     
     def getPlayerColour(self):
         return self.playerColour
@@ -56,7 +61,7 @@ class Board:
         if self.playerColour == Colour.WHITE:
             return Colour.BLACK
         else:
-            return self.playerColour
+            return Colour.WHITE
 
     def clearBoard(self) -> None:
         self.pieces = []
@@ -71,35 +76,51 @@ class Board:
             raise ValueError(f"Can only setup with an 8x8 board. Current board is: {self.width}x{self.height}")
 
         self.pieces = [
-            [Piece(Chessman.ROOK, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.QUEEN, Colour.BLACK), Piece(Chessman.KING, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.ROOK, Colour.BLACK)],
-            [Piece(Chessman.PAWN, Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,  Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK)],
-            [Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),               Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)],
-            [Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),               Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)],
-            [Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),               Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)],
-            [Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),               Piece(Chessman.EMPTY),              Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)],
-            [Piece(Chessman.PAWN, Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,  Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE)],
-            [Piece(Chessman.ROOK, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN, Colour.WHITE), Piece(Chessman.KING, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)]
+            [Piece(Chessman.ROOK,   Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN,  Colour.WHITE), Piece(Chessman.KING,   Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)],
+            [Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE)],
+            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+            [Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK)],
+            [Piece(Chessman.ROOK,   Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.QUEEN,  Colour.BLACK), Piece(Chessman.KING,   Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.ROOK, Colour.BLACK)]
         ]
 
-        for i in range(8):
-            for j in range(8):
-                self.pieces[i][j].setPos(Pos(i + 1, j + 1))
+        for rank in range(self.height):
+            for file in range(self.width):
+                self.pieces[rank][file].pos = Pos(rank + 1, file + 1)
 
-    def getPiece(self, rank : int, file : int) -> Piece:
-        if rank < 0 or rank >= self.width:
-            raise ValueError(f"rank out of range: Please give a value between {0}-{self.width}. Value given: {rank}")
+    def getPiece(self, *args, **kwargs) -> Piece:
+        if len(args) == 0:
+            raise ValueError(f"Invalid number of args, given {args}")
 
-        if file < 0 or file >= self.width:
-            raise ValueError(f"file out of range: Please give a value between {0}-{self.height}. Value given: {file}")
+        elif len(args) == 1:
+            if not len(args[0]) == 2:
+                raise ValueError(f"Invalid value for position, expected a number and letter, given {args[0]}")
 
-        return self.pieces[rank][file]
+            file = ord(args[0][0]) - 97
+            rank = int(args[0][1]) - 1
 
-    def movePiece(self, srcPos : Pos, destPos : Pos) -> bool:
-        if srcPos.rank < 0 or srcPos.rank >= self.width:
-            raise ValueError(f"srcPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {srcPos.rank}")
+            return self.pieces[rank][file]
 
-        if srcPos.file < 0 or srcPos.file >= self.height:
-            raise ValueError(f"srcPos File out of range: Please give a value between {0}-{self.height}. Value given: {srcPos.file}")
+        elif len(args) == 2:
+            rank, file = args
+            rank -= 1
+
+            if isinstance(file, str):
+                file = ord(file) - 97
+            elif isinstance(file, int):
+                file  -= 1
+            else:
+                pass
+
+            return self.pieces[rank][file]
+        else:
+            pass
+
+    def movePiece(self, action: Action) -> bool:
+        srcPos = action.piece.pos
+        destPos = action.pos
 
         if destPos.rank < 0 or destPos.rank >= self.width:
             raise ValueError(f"destPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {destPos.rank}")
@@ -116,7 +137,7 @@ class Board:
 
         self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
         self.pieces[destPos.rank][destPos.file] = piece
-        piece.setPos(destPos)
+        piece.pos = destPos
 
         return True
 
@@ -129,7 +150,6 @@ class Board:
         return False if len(self.getPieces(self.playerColour)) == 0 or len(self.getPieces(self.getAiColour)) == 0 else True
 
     def getPieces(self, playerColour : Colour) -> List[Piece]:
-
         pieces = []
 
         for rank in self.pieces:

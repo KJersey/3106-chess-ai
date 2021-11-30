@@ -68,9 +68,6 @@ class Piece:
     def __repr__(self) -> str:
         return self.__str__()
 
-    def setPos(self, pos : Pos) -> None:
-        self.pos = pos
-
     def getActions(self): # TODO: fill in
         return []
 

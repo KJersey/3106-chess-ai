@@ -2,11 +2,8 @@ from board import *
 
 def main():
     b = Board()
-    b.movePiece(Pos("2a"), Pos("4a"))
-    print(b)
-    print()
-    b.flipBoard()
-    b.movePiece(Pos("2b"), Pos("4b"))
+    a = Action(ActionType.MOVE, b.getPiece("a2"), Pos("a4"))
+    b.movePiece(a)
     print(b)
 
 if __name__ == "__main__":

@@ -1,5 +1,4 @@
 import enum
-from typing_extensions import Unpack
 
 DEPTH = 4
 
@@ -133,8 +132,8 @@ class Pos():
             if not len(args[0]) == 2:
                 raise ValueError(f"Invalid value for position, expected a number and letter, given {args[0]}")
 
-            self.rank = int(args[0][0]) - 1
-            self.file = ord(args[0][1]) - 97
+            self.file = ord(args[0][0]) - 97
+            self.rank = int(args[0][1]) - 1
 
         elif len(args) == 2:
             rank, file = args
@@ -156,15 +155,8 @@ class Pos():
         return self.__str__()
 
 class ActionType(enum.Enum):
-    NO_ACTION = enum.auto()
-
-class Movement(enum.Enum):
-    UP = enum.auto()
-    DOWN = enum.auto()
-    LEFT = enum.auto()
-    RIGHT = enum.auto()
-
-    DIAG_UP_LEFT = enum.auto()
-    DIAG_UP_RIGHT = enum.auto()
-    DIAG_DOWN_LEFT = enum.auto()
-    DIAG_DOWN_RIGHT = enum.auto()
+    NO_ACTION       = enum.auto()
+    MOVE            = enum.auto()
+    SHORT_CASTLE    = enum.auto()
+    LONG_CASTLE     = enum.auto()
+    PROMOTION       = enum.auto()
