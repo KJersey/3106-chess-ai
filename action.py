@@ -14,10 +14,8 @@ class Action:
             s += "No Action "
         elif self.actionType == ActionType.MOVE:
             s += "Move "
-        elif self.actionType == ActionType.SHORT_CASTLE:
-            s += "Short Castle "
-        elif self.actionType == ActionType.LONG_CASTLE:
-            s += "Long Castle "
+        elif self.actionType == ActionType.CASTLE:
+            s += "Castle "
         elif self.actionType == ActionType.PROMOTION:
             s += "Promotion to: "
             if self.chessman == Chessman.ROOK:

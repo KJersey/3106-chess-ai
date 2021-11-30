@@ -4,12 +4,16 @@ class Piece:
     def __init__(self, chessman : Chessman = Chessman.EMPTY, colour : Colour = Colour.EMPTY, pos : Pos = Pos()):
         self.chessman = chessman
         self.colour = colour
-
         self.pos = pos
+
+        self.moved = False # Used for castling
 
     def __str__(self) -> str:
         if self.chessman == Chessman.EMPTY:
-            return ' '
+            if ANSI:
+                return ' '
+            else:
+                return '.'
 
         if not UNICODE:
             if self.chessman == Chessman.PAWN:

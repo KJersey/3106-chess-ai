@@ -2,8 +2,11 @@ import enum
 
 DEPTH = 4
 
-UNICODE = True  # Enables UNICODE Chess Characters
-ANSI = True     # Enables ANSI Coloured Background
+# Enables UNICODE Chess Characters
+UNICODE = True  
+
+# Enables ANSI Coloured Background
+ANSI = True     
 
 class Colour(enum.Enum):
     EMPTY = enum.auto()
@@ -123,7 +126,7 @@ class ANSIColours:
         bgBrightWhite = ""
 
 class Pos():
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args):
         if len(args) == 0:
             self.rank = -1
             self.file = -1
@@ -155,8 +158,7 @@ class Pos():
         return self.__str__()
 
 class ActionType(enum.Enum):
-    NO_ACTION       = enum.auto()
-    MOVE            = enum.auto()
-    SHORT_CASTLE    = enum.auto()
-    LONG_CASTLE     = enum.auto()
-    PROMOTION       = enum.auto()
+    NO_ACTION   = enum.auto()
+    MOVE        = enum.auto()
+    CASTLE      = enum.auto()
+    PROMOTION   = enum.auto()

@@ -18,6 +18,8 @@ class Board:
         self.playerColour = playerColour
         self.flipped = False
 
+        self.lastMoved = None # Used for en passant
+
         if self.width == 8 and self.height == 8:
             self.setupBoard()
         else:
@@ -90,7 +92,7 @@ class Board:
             for file in range(self.width):
                 self.pieces[rank][file].pos = Pos(rank + 1, file + 1)
 
-    def getPiece(self, *args, **kwargs) -> Piece:
+    def getPiece(self, *args) -> Piece:
         if len(args) == 0:
             raise ValueError(f"Invalid number of args, given {args}")
 
@@ -118,7 +120,7 @@ class Board:
         else:
             pass
 
-    def movePiece(self, action: Action) -> bool:
+    def performAction(self, action: Action) -> bool:
         srcPos = action.piece.pos
         destPos = action.pos
 
@@ -128,16 +130,20 @@ class Board:
         if destPos.file < 0 or destPos.file >= self.height:
             raise ValueError(f"destPos File out of range: Please give a value between {0}-{self.height}. Value given: {destPos.file}")
 
-        # TODO: Implement actual legality checking. Currently just moves piece
+        if action.actionType == ActionType.MOVE:
+            # TODO: Implement actual legality checking. Currently just moves piece
 
-        piece = self.pieces[srcPos.rank][srcPos.file]
+            piece = self.pieces[srcPos.rank][srcPos.file]
 
-        if piece.chessman == Chessman.EMPTY:
-            return False
+            if piece.chessman == Chessman.EMPTY:
+                return False
 
-        self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
-        self.pieces[destPos.rank][destPos.file] = piece
-        piece.pos = destPos
+            self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
+            self.pieces[destPos.rank][destPos.file] = piece
+            piece.pos = destPos
+            piece.moved = True
+
+            self.lastMoved = piece
 
         return True
 
