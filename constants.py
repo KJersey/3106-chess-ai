@@ -1,4 +1,5 @@
 import enum
+from typing_extensions import Unpack
 
 DEPTH = 4
 
@@ -156,3 +157,14 @@ class Pos():
 
 class ActionType(enum.Enum):
     NO_ACTION = enum.auto()
+
+class Movement(enum.Enum):
+    UP = enum.auto()
+    DOWN = enum.auto()
+    LEFT = enum.auto()
+    RIGHT = enum.auto()
+
+    DIAG_UP_LEFT = enum.auto()
+    DIAG_UP_RIGHT = enum.auto()
+    DIAG_DOWN_LEFT = enum.auto()
+    DIAG_DOWN_RIGHT = enum.auto()

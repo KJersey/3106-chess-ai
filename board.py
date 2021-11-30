@@ -126,7 +126,7 @@ class Board:
     # TODO: Fill these in
     def isFinished(self):
         # If no actions left (either white or black has won)
-        return False
+        return False if len(self.getPieces(self.playerColour)) == 0 or len(self.getPieces(self.getAiColour)) == 0 else True
 
     def getPieces(self, playerColour : Colour) -> List[Piece]:
 
@@ -139,6 +139,16 @@ class Board:
 
         return pieces
 
+    def isValidAction(self, piece, act):
+        # Meant to validate player move
+        # Validate action (if specific piece can act in specified way)
+        # Also call isValidMove
+        return piece.isValidAction(act) and self.isValidMove(self, act)
+
+    def isValidMove(self, act):
+        # Validate move (check if piece collides with another piece of same colour or if piece moves off board)
+        return True
+
     def gameScore(self):
         # Heuristic value if game not done, or final game value if game is done
         return False
@@ -146,6 +156,10 @@ class Board:
     def getActions(self, playerColour : Colour):
         # Return all possible actions from player
         actions = []
+        for p in self.getPieces(playerColour):
+            for act in p.getActions():
+                if self.isValidMove(act):
+                    actions.append(act)
         return actions
 
     def childBoard(self, action):

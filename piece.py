@@ -71,6 +71,16 @@ class Piece:
     def setPos(self, pos : Pos) -> None:
         self.pos = pos
 
+    def getActions(self): # TODO: fill in
+        return []
+
+    def isValidAction(self, act):  # TODO: complete
+        actions = self.getActions()
+        for act in self.getActions():
+            # Check if act matches an available action
+            return True
+        return False
+
     def getImagePath(self) -> str:
         if self.chessman == Chessman.EMPTY:
             return ""
