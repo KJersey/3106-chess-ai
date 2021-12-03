@@ -5,7 +5,7 @@ from piece import *
 from action import *
 
 class Board:
-    def __init__(self, width : int = 8, height : int = 8, playerColour : Colour = Colour.BLACK):
+    def __init__(self, width : int = 8, height : int = 8, playerColour : Colour = Colour.BLACK, initPieces : List = []):
 
         if width <= 0 or width > 26:
             raise ValueError(f"width out of range: Please enter a value between 0-26, Value given: {width}")
@@ -21,7 +21,7 @@ class Board:
         self.lastMoved = None # Used for en passant
 
         if self.width == 8 and self.height == 8:
-            self.setupBoard()
+            self.setupBoard(initPieces)
         else:
             self.clearBoard()
 
@@ -73,20 +73,23 @@ class Board:
                 row.append(Piece())
             self.pieces.append(row)
 
-    def setupBoard(self) -> None:
+    def setupBoard(self, initPieces : List) -> None:
         if not self.width == 8 or not self.height == 8:
             raise ValueError(f"Can only setup with an 8x8 board. Current board is: {self.width}x{self.height}")
 
-        self.pieces = [
-            [Piece(Chessman.ROOK,   Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN,  Colour.WHITE), Piece(Chessman.KING,   Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)],
-            [Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE)],
-            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-            [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-            [Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK)],
-            [Piece(Chessman.ROOK,   Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.QUEEN,  Colour.BLACK), Piece(Chessman.KING,   Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.ROOK, Colour.BLACK)]
-        ]
+        if initPieces and len(initPieces) > 0:
+            self.pieces = initPieces
+        else:
+            self.pieces = [
+                [Piece(Chessman.ROOK,   Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN,  Colour.WHITE), Piece(Chessman.KING,   Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)],
+                [Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE)],
+                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
+                [Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK)],
+                [Piece(Chessman.ROOK,   Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.QUEEN,  Colour.BLACK), Piece(Chessman.KING,   Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.ROOK, Colour.BLACK)]
+            ]
 
         for rank in range(self.height):
             for file in range(self.width):
@@ -120,21 +123,21 @@ class Board:
         else:
             pass
 
-    def performAction(self, action: Action) -> bool:
+    def performAction(self, action : Action) -> bool:
         srcPos = action.piece.pos
         destPos = action.pos
 
         if destPos.rank < 0 or destPos.rank >= self.width:
             raise ValueError(f"destPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {destPos.rank}")
-
-        if destPos.file < 0 or destPos.file >= self.height:
+        elif destPos.file < 0 or destPos.file >= self.height:
             raise ValueError(f"destPos File out of range: Please give a value between {0}-{self.height}. Value given: {destPos.file}")
 
+        piece = self.pieces[srcPos.rank][srcPos.file]
+        if not self.isValidAction(piece, action):
+            return False
+
         if action.actionType == ActionType.MOVE:
-            # TODO: Implement actual legality checking. Currently just moves piece
-
-            piece = self.pieces[srcPos.rank][srcPos.file]
-
+            # TODO: Currently just moves piece (add pawn promotion)
             if piece.chessman == Chessman.EMPTY:
                 return False
 
@@ -150,7 +153,6 @@ class Board:
     def flipBoard(self) -> None:
         self.flipped = not self.flipped
 
-    # TODO: Fill these in
     def isFinished(self):
         # If no actions left (either white or black has won)
         return False if len(self.getPieces(self.playerColour)) == 0 or len(self.getPieces(self.getAiColour)) == 0 else True
@@ -165,17 +167,60 @@ class Board:
 
         return pieces
 
-    def isValidAction(self, piece, act):
-        # Meant to validate player move
-        # Validate action (if specific piece can act in specified way)
-        # Also call isValidMove
-        return piece.isValidAction(act) and self.isValidMove(self, act)
+    def getPieceActions(self, piece): # TODO: fill in
+        actions = []
 
-    def isValidMove(self, act):
-        # Validate move (check if piece collides with another piece of same colour or if piece moves off board)
+        return actions
+
+    def isValidPieceAction(self, piece, action):
+        for move in self.getPieceActions(piece):
+            # Check if input action matches an available action
+            if action.actionType == move.actionType and action.piece == piece and action.pos == move.pos:
+                return True
+        return False
+
+    def isValidAction(self, piece, act):
+        return self.isValidPieceAction(piece, act) and self.noCollisions(act)
+
+    def noCollisions(self, act): # TODO: Fill in
+        # Validate move, check if piece collides with another piece of same colour anywhere, if another piece in between path
+        
+        # Check if act.pos contains piece of same colour
+        destPiece = self.pieces[act.pos.rank][act.pos.file]
+        if destPiece.colour == act.piece.colour:
+            return False
+        
+        if act.piece.chessman == Chessman.KNIGHT:
+            # Will hop over all pieces inside of path
+            return True
+
+        rank = act.piece.pos.rank
+        file = act.piece.pos.file
+        changeRank = 0
+        changeFile = 0
+        if act.pos.rank < act.piece.pos.rank: # Up
+            changeRank = -1
+        elif act.pos.rank > act.piece.pos.rank: # Down
+            changeRank = 1
+        if act.pos.file < act.piece.pos.file: # Left
+            changeFile = -1
+        elif act.pos.file > act.piece.pos.file: # Right
+            changeFile = 1
+
+        # Calc Steps
+        steps = max(abs(act.piece.pos.rank-act.pos.rank), abs(act.piece.pos.file-act.pos.file))
+
+        # For each step, check if a piece is in the way
+        for i in range(steps-1):
+            rank += changeRank
+            file += changeFile
+            
+            if self.pieces[rank][file].chessman != Chessman.EMPTY:
+                return False
+
         return True
 
-    def gameScore(self):
+    def gameScore(self): # TODO: Fill in
         # Heuristic value if game not done, or final game value if game is done
         return False
 
@@ -189,5 +234,9 @@ class Board:
         return actions
 
     def childBoard(self, action):
-        # Initialize and return new board with same state, but affected by input action
-        return self
+        # Initialize new board starting from same state
+        copiedPieces = self.pieces # TODO: Deep copy pieces, or initialize new board with FEN formatted string
+        childBoard = Board(self.width, self.height, self.playerColour, copiedPieces) 
+        # Apply action on childBoard
+        childBoard.performAction(action)
+        return childBoard
