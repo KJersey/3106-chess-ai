@@ -235,7 +235,12 @@ class Board:
 
     def childBoard(self, action):
         # Initialize new board starting from same state
-        copiedPieces = self.pieces # TODO: Deep copy pieces, or initialize new board with FEN formatted string
+        copiedPieces = []
+        # Create deep copy of pieces
+        for piece in self.pieces:
+            newPiece = Piece(piece.chessman, piece.colour, piece.pos)
+            newPiece.moved = piece.moved
+            copiedPieces.append(newPiece)
         childBoard = Board(self.width, self.height, self.playerColour, copiedPieces) 
         # Apply action on childBoard
         childBoard.performAction(action)
