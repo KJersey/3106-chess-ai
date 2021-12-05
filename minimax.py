@@ -13,7 +13,7 @@ def maxAlphaBeta(board, alpha, beta, depth):
     :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
-        return board.gameScore(), Action()
+        return board.aiGameScore(), Action()
     
     optimalVal = None
     optimalAct = None
@@ -25,7 +25,7 @@ def maxAlphaBeta(board, alpha, beta, depth):
 
         if childVal >= beta:
             return childVal, childAct
-        alpha = max(alpha, childVal) # TODO: check if changing value here will change value in parent
+        alpha = max(alpha, childVal)
 
     return optimalVal, optimalAct
 
@@ -39,7 +39,7 @@ def minAlphaBeta(board, alpha, beta, depth):
     :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
-      return board.gameScore(), Action()
+      return board.aiGameScore(), Action()
     
     optimalVal = None
     optimalAct = None
@@ -51,7 +51,7 @@ def minAlphaBeta(board, alpha, beta, depth):
 
         if childVal <= alpha:
             return childVal, childAct
-        beta = min(beta, childVal) # TODO: check if changing value here will change value in parent
+        beta = min(beta, childVal)
 
     return optimalVal, optimalAct
 

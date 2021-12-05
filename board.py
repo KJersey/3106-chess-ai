@@ -305,9 +305,24 @@ class Board:
 
         return True
 
-    def gameScore(self): # TODO: Fill in
+    def aiGameScore(self):
         # Heuristic value if game not done, or final game value if game is done
-        return False
+        # TODO: account for doubled, blocked, isolated pawns (-0.5 each for AI side, +0.5 each for player side)
+        # TODO: account for the number of legal actions (+0.1 each for AI side, -0.1 each for player side)
+        pieceDiff = {}
+        for piece in self.pieces:
+            if piece.chessman not in pieceDiff:
+                pieceDiff[piece.chessman] = 0
+            
+            if piece.colour == self.getAiColour():
+                pieceDiff[piece.chessman] += 1
+            else:
+                pieceDiff[piece.chessman] -= 1
+        
+        value = 0
+        for chessman in pieceDiff:
+            value += ChessmanValue[chessman]*pieceDiff[chessman]
+        return value
 
     def getActions(self, playerColour : Colour):
         # Return all possible actions from player
@@ -320,11 +335,6 @@ class Board:
 
     def childBoard(self, action):
         # Initialize new board starting from same state
-        copiedPieces = []
-        # Create deep copy of pieces
-        for piece in self.pieces:
-            newPiece = Piece(piece.chessman, piece.colour, piece.pos)
-            copiedPieces.append(newPiece)
         childBoard = Board(self.genFen(), self.prevFens) 
         # Apply action on childBoard
         childBoard.performAction(action)

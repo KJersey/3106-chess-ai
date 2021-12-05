@@ -22,6 +22,16 @@ class Chessman(enum.Enum):
     KING    = enum.auto()
     QUEEN   = enum.auto()
 
+ChessmanValue = {
+    Chessman.EMPTY: 0,
+    Chessman.PAWN: 1,
+    Chessman.KNIGHT: 3,
+    Chessman.BISHOP: 3,
+    Chessman.ROOK: 5,
+    Chessman.QUEEN: 9,
+    Chessman.KING: 200
+}
+
 class ANSIColours:
     if ANSI:
         reset = "\033[0m"
