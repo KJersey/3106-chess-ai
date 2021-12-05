@@ -125,6 +125,13 @@ class ANSIColours:
         bgWhite = ""
         bgBrightWhite = ""
 
+class CastleRights:
+    def __init__(self, K : bool = True, Q : bool = True, k : bool = True, q : bool = True):
+        self.K = K
+        self.Q = Q
+        self.k = k
+        self.q = q
+
 class Pos():
     def __init__(self, *args):
         if len(args) == 0:
@@ -152,7 +159,7 @@ class Pos():
             pass
 
     def __str__(self) -> str:
-        return str(self.rank + 1) + chr(self.file + 97)
+        return chr(self.file + 97) + str(self.rank + 1)
 
     def __repr__(self) -> str:
         return self.__str__()

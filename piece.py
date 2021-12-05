@@ -6,8 +6,6 @@ class Piece:
         self.colour = colour
         self.pos = pos
 
-        self.moved = False # Used for castling
-
     def __str__(self) -> str:
         if self.chessman == Chessman.EMPTY:
             if ANSI:
@@ -16,25 +14,7 @@ class Piece:
                 return '.'
 
         if not UNICODE:
-            if self.chessman == Chessman.PAWN:
-                c =  'p'
-            elif self.chessman == Chessman.BISHOP:
-                c =  'b'
-            elif self.chessman == Chessman.KNIGHT:
-                c =  'n'
-            elif self.chessman == Chessman.ROOK:
-                c =  'r'
-            elif self.chessman == Chessman.QUEEN:
-                c =  'q'
-            elif self.chessman == Chessman.KING:
-                c =  'k'
-            else:
-                raise ValueError("Piece not an expected value!")
-
-            if self.colour == Colour.WHITE:
-                c = c.upper()
-
-            return c
+            return self.getASCII()
 
         if self.colour == Colour.WHITE:
             if self.chessman == Chessman.PAWN:
@@ -71,6 +51,27 @@ class Piece:
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def getASCII(self):
+        if self.chessman == Chessman.PAWN:
+            c =  'p'
+        elif self.chessman == Chessman.BISHOP:
+            c =  'b'
+        elif self.chessman == Chessman.KNIGHT:
+            c =  'n'
+        elif self.chessman == Chessman.ROOK:
+            c =  'r'
+        elif self.chessman == Chessman.QUEEN:
+            c =  'q'
+        elif self.chessman == Chessman.KING:
+            c =  'k'
+        else:
+            raise ValueError("Piece not an expected value!")
+
+        if self.colour == Colour.WHITE:
+            c = c.upper()
+
+        return c
 
     def getImagePath(self) -> str:
         if self.chessman == Chessman.EMPTY:

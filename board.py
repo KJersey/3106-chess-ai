@@ -5,38 +5,71 @@ from piece import *
 from action import *
 
 class Board:
-    def __init__(self, width : int = 8, height : int = 8, playerColour : Colour = Colour.BLACK, initPieces : List = []):
+    def __init__(self, fen : str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", prevFens : list = []):
 
-        if width <= 0 or width > 26:
-            raise ValueError(f"width out of range: Please enter a value between 0-26, Value given: {width}")
+        fields = fen.split(' ')
+        rows = fields[0].split('/')
 
-        if height <= 0 or height > 9:
-            raise ValueError(f"width out of range: Please enter a value between 0-9, Value given: {height}")
+        self.pieces = []
 
-        self.width = width
-        self.height = height
-        self.playerColour = playerColour
-        self.flipped = False
+        rank = 8
+        for r in rows:
+            row = []
+            file = 1
+            for c in r:
+                if c == 'p':
+                    row.append(Piece(Chessman.PAWN, Colour.BLACK, Pos(rank, file)))
+                elif c == 'P':
+                    row.append(Piece(Chessman.PAWN, Colour.WHITE, Pos(rank, file)))
+                elif c == 'r':
+                    row.append(Piece(Chessman.ROOK, Colour.BLACK, Pos(rank, file)))
+                elif c == 'R':
+                    row.append(Piece(Chessman.ROOK, Colour.WHITE, Pos(rank, file)))
+                elif c == 'n':
+                    row.append(Piece(Chessman.KNIGHT, Colour.BLACK, Pos(rank, file)))
+                elif c == 'N':
+                    row.append(Piece(Chessman.KNIGHT, Colour.WHITE, Pos(rank, file)))
+                elif c == 'b':
+                    row.append(Piece(Chessman.BISHOP, Colour.BLACK, Pos(rank, file)))
+                elif c == 'B':
+                    row.append(Piece(Chessman.BISHOP, Colour.WHITE, Pos(rank, file)))
+                elif c == 'q':
+                    row.append(Piece(Chessman.QUEEN, Colour.BLACK, Pos(rank, file)))
+                elif c == 'Q':
+                    row.append(Piece(Chessman.QUEEN, Colour.WHITE, Pos(rank, file)))
+                elif c == 'k':
+                    row.append(Piece(Chessman.KING, Colour.BLACK, Pos(rank, file)))
+                elif c == 'K':
+                    row.append(Piece(Chessman.KING, Colour.WHITE, Pos(rank, file)))
+                else:
+                    for _ in range(int(c)):
+                        row.append(Piece(Chessman.EMPTY, Colour.EMPTY, Pos(rank, file)))
+                        file += 1
+                    file -= 1
+                
+                file += 1
+            self.pieces.insert(0, row)
+            rank -= 1
 
-        self.lastMoved = None # Used for en passant
-
-        if self.width == 8 and self.height == 8:
-            self.setupBoard(initPieces)
-        else:
-            self.clearBoard()
+        self.currentPlayer = Colour.WHITE if fields[1] == 'w' else Colour.BLACK
+        self.castleRights = CastleRights('K' in fields[2], 'Q' in fields[2], 'k' in fields[2], 'q' in fields[2])
+        self.enPassantTarget = fields[3]
+        self.halfMove = int(fields[4])
+        self.fullTurn = int(fields[5])
+        self.prevFens = prevFens
 
     def __str__(self) -> str:
         s = ""
 
         pieces = self.pieces
-        if self.flipped:
+        if self.currentPlayer == Colour.BLACK:
             pieces = np.flip(pieces)
 
         board = ""
 
-        for rank in range(self.height):
-            row = (str(self.height - rank) if self.flipped else str(rank + 1)) + "│" + ANSIColours.fgBrightBlack
-            for file in range(self.width):
+        for rank in range(8):
+            row = (str(8 - rank) if self.currentPlayer == Colour.BLACK else str(rank + 1)) + "│" + ANSIColours.fgBrightBlack
+            for file in range(8):
                 row += ANSIColours.bgWhite if (rank + file) % 2 else ANSIColours.bgBlack # ANSI Background colours
                 row += str(pieces[rank][file]) + ' '
                 
@@ -46,18 +79,15 @@ class Board:
         s += board
 
         s += "─┼"
-        for _ in range(self.width):
+        for _ in range(8):
             s += '──'
 
         s += '\n │'
 
-        for file in range(self.width):
-            s += chr(96 + (self.width - file if self.flipped else file + 1)) + ' '
+        for file in range(8):
+            s += chr(96 + (8 - file if self.currentPlayer == Colour.BLACK else file + 1)) + ' '
 
         return s
-    
-    def getPlayerColour(self):
-        return self.playerColour
 
     def getAiColour(self):
         if self.playerColour == Colour.WHITE:
@@ -67,33 +97,58 @@ class Board:
 
     def clearBoard(self) -> None:
         self.pieces = []
-        for _ in range(self.height):
+        for _ in range(8):
             row = []
-            for _ in range(self.width):
+            for _ in range(8):
                 row.append(Piece())
             self.pieces.append(row)
 
-    def setupBoard(self, initPieces : List) -> None:
-        if not self.width == 8 or not self.height == 8:
-            raise ValueError(f"Can only setup with an 8x8 board. Current board is: {self.width}x{self.height}")
+    def genFen(self) -> str:
+        fen = ""
 
-        if initPieces and len(initPieces) > 0:
-            self.pieces = initPieces
+        for i in range(7, -1, -1):
+            counter = 0
+            for piece in self.pieces[i]:
+                if piece.chessman == Chessman.EMPTY:
+                    counter += 1
+                elif counter > 0:
+                    fen += str(counter)
+                    counter = 0
+                    fen += piece.getASCII()
+                else:
+                    fen += piece.getASCII()
+
+            if counter > 0:
+                fen += str(counter)
+            fen += '/'
+
+        fen = fen[:-1] + ' '
+
+        fen += 'w ' if self.currentPlayer == Colour.WHITE else 'b '
+
+        cr = ''
+
+        if self.castleRights.K:
+            cr += 'K'
+        if self.castleRights.Q:
+            cr += 'Q'
+        if self.castleRights.k:
+            cr += 'k'
+        if self.castleRights.q:
+            cr += 'q'
+        if cr == '':
+            cr = '-'
+
+        fen += cr + ' '
+
+        if not self.enPassantTarget is None:
+            fen += self.enPassantTarget + ' '
         else:
-            self.pieces = [
-                [Piece(Chessman.ROOK,   Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.QUEEN,  Colour.WHITE), Piece(Chessman.KING,   Colour.WHITE), Piece(Chessman.BISHOP, Colour.WHITE), Piece(Chessman.KNIGHT, Colour.WHITE), Piece(Chessman.ROOK, Colour.WHITE)],
-                [Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN,   Colour.WHITE), Piece(Chessman.PAWN, Colour.WHITE)],
-                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-                [Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY),                Piece(Chessman.EMPTY)]             ,
-                [Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN,   Colour.BLACK), Piece(Chessman.PAWN, Colour.BLACK)],
-                [Piece(Chessman.ROOK,   Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.QUEEN,  Colour.BLACK), Piece(Chessman.KING,   Colour.BLACK), Piece(Chessman.BISHOP, Colour.BLACK), Piece(Chessman.KNIGHT, Colour.BLACK), Piece(Chessman.ROOK, Colour.BLACK)]
-            ]
+            fen += '- '
 
-        for rank in range(self.height):
-            for file in range(self.width):
-                self.pieces[rank][file].pos = Pos(rank + 1, file + 1)
+        fen += str(self.halfMove) + ' ' + str(self.fullTurn)
+
+        return fen
 
     def getPiece(self, *args) -> Piece:
         if len(args) == 0:
@@ -123,40 +178,6 @@ class Board:
         else:
             pass
 
-    def performAction(self, action : Action) -> bool:
-        srcPos = action.piece.pos
-        destPos = action.pos
-
-        if destPos.rank < 0 or destPos.rank >= self.width:
-            raise ValueError(f"destPos Rank out of range: Please give a value between {0}-{self.width}. Value given: {destPos.rank}")
-        elif destPos.file < 0 or destPos.file >= self.height:
-            raise ValueError(f"destPos File out of range: Please give a value between {0}-{self.height}. Value given: {destPos.file}")
-
-        piece = self.pieces[srcPos.rank][srcPos.file]
-        if not self.isValidAction(piece, action):
-            return False
-
-        if action.actionType == ActionType.MOVE:
-            # TODO: Currently just moves piece (add pawn promotion)
-            if piece.chessman == Chessman.EMPTY:
-                return False
-
-            self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
-            self.pieces[destPos.rank][destPos.file] = piece
-            piece.pos = destPos
-            piece.moved = True
-
-            self.lastMoved = piece
-
-        return True
-
-    def flipBoard(self) -> None:
-        self.flipped = not self.flipped
-
-    def isFinished(self):
-        # If no actions left (either white or black has won)
-        return False if len(self.getPieces(self.playerColour)) == 0 or len(self.getPieces(self.getAiColour)) == 0 else True
-
     def getPieces(self, playerColour : Colour) -> List[Piece]:
         pieces = []
 
@@ -166,6 +187,70 @@ class Board:
                     pieces.append(piece)
 
         return pieces
+
+    def performAction(self, action : Action) -> bool:
+        srcPos = action.piece.pos
+        destPos = action.pos
+
+        if destPos.rank < 0 or destPos.rank >= 8:
+            raise ValueError(f"destPos Rank out of range: Please give a value between {0}-{8}. Value given: {destPos.rank}")
+        elif destPos.file < 0 or destPos.file >= 8:
+            raise ValueError(f"destPos File out of range: Please give a value between {0}-{8}. Value given: {destPos.file}")
+
+        piece = self.pieces[srcPos.rank][srcPos.file]
+        if not self.isValidAction(piece, action):
+            return False
+
+        capture = False
+
+        if action.actionType == ActionType.MOVE:
+            # TODO: Currently just moves piece (add pawn promotion)
+            if piece.chessman == Chessman.EMPTY:
+                return False
+
+            self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
+            self.pieces[destPos.rank][destPos.file] = piece
+            piece.pos = destPos
+
+            if piece.chessman == Chessman.PAWN and destPos.rank - srcPos.rank == 2:
+                self.enPassantTarget = str(Pos(destPos.rank, destPos.file + 1))
+            else:
+                self.enPassantTarget = None
+
+                if piece.chessman == Chessman.KING:
+                    if piece.colour == Colour.WHITE:
+                        self.castleRights.K = False
+                        self.castleRights.Q = False
+                    else:
+                        self.castleRights.k = False
+                        self.castleRights.q = False
+                    self.enPassantTarget = None
+                elif piece.chessman == Chessman.ROOK:
+                    if srcPos.rank == 0 and srcPos.file == 0 and piece.colour == Colour.WHITE:
+                        self.castleRights.Q = False
+                    elif srcPos.rank == 0 and srcPos.file == 7 and piece.colour == Colour.WHITE:
+                        self.castleRights.K = False
+                    elif srcPos.rank == 7 and srcPos.file == 0 and piece.colour == Colour.BLACK:
+                        self.castleRights.q = False
+                    elif srcPos.rank == 7 and srcPos.file == 7 and piece.colour == Colour.BLACK:
+                        self.castleRights.k = False
+                    
+
+            
+
+        self.currentPlayer = Colour.BLACK if self.currentPlayer == Colour.WHITE else Colour.WHITE
+
+        if piece.chessman == Chessman.PAWN or capture:
+            self.halfMove = 0
+        else:
+            self.halfMove += 1
+
+        if self.currentPlayer == Colour.WHITE:
+            self.fullTurn += 1
+
+        self.prevFens.append(self.genFen())
+
+        return True
 
     def getPieceActions(self, piece): # TODO: fill in
         actions = []
@@ -177,7 +262,7 @@ class Board:
             # Check if input action matches an available action
             if action.actionType == move.actionType and action.piece == piece and action.pos == move.pos:
                 return True
-        return False
+        return True # Temp
 
     def isValidAction(self, piece, act):
         return self.isValidPieceAction(piece, act) and self.noCollisions(act)
@@ -239,9 +324,12 @@ class Board:
         # Create deep copy of pieces
         for piece in self.pieces:
             newPiece = Piece(piece.chessman, piece.colour, piece.pos)
-            newPiece.moved = piece.moved
             copiedPieces.append(newPiece)
-        childBoard = Board(self.width, self.height, self.playerColour, copiedPieces) 
+        childBoard = Board(self.genFen(), self.prevFens) 
         # Apply action on childBoard
         childBoard.performAction(action)
         return childBoard
+
+    def isFinished(self):
+        # If no actions left (either white or black has won)
+        return False if len(self.getActions(self.playerColour)) == 0 or len(self.getActions(self.getAiColour)) == 0 else True
