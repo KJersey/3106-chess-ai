@@ -342,4 +342,4 @@ class Board:
 
     def isFinished(self):
         # If no actions left (either white or black has won)
-        return False if len(self.getActions(self.playerColour)) == 0 or len(self.getActions(self.getAiColour)) == 0 else True
+        return True if len(self.getActions(self.playerColour)) == 0 or len(self.getActions(self.getAiColour)) == 0 else False
