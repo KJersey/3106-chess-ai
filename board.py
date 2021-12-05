@@ -267,7 +267,7 @@ class Board:
     def isValidAction(self, piece, act):
         return self.isValidPieceAction(piece, act) and self.noCollisions(act)
 
-    def noCollisions(self, act): # TODO: Fill in
+    def noCollisions(self, act):
         # Validate move, check if piece collides with another piece of same colour anywhere, if another piece in between path
         
         # Check if act.pos contains piece of same colour
@@ -328,7 +328,7 @@ class Board:
         # Return all possible actions from player
         actions = []
         for p in self.getPieces(playerColour):
-            for act in p.getActions():
+            for act in self.getPieceActions(p):
                 if self.isValidMove(act):
                     actions.append(act)
         return actions
