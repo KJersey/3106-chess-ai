@@ -89,12 +89,6 @@ class Board:
 
         return s
 
-    def getAiColour(self):
-        if self.playerColour == Colour.WHITE:
-            return Colour.BLACK
-        else:
-            return Colour.WHITE
-
     def clearBoard(self) -> None:
         self.pieces = []
         for _ in range(8):
@@ -180,12 +174,10 @@ class Board:
 
     def getPieces(self, playerColour : Colour) -> List[Piece]:
         pieces = []
-
         for rank in self.pieces:
             for piece in rank:
                 if piece.colour == playerColour:
                     pieces.append(piece)
-
         return pieces
 
     def performAction(self, action : Action) -> bool:
@@ -254,6 +246,13 @@ class Board:
 
     def getPieceActions(self, piece): # TODO: fill in
         actions = []
+        advanceDirection = 1 if piece.colour == Colour.WHITE else -1
+        if piece.chessman == Chessman.PAWN:
+            # TODO: add En Passant
+            # TODO: add promotion to action if at the end of board
+            actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*1, piece.pos.file)))
+            if piece.pos.rank == 1 or piece.pos.rank == 6:
+                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*2, piece.pos.file)))
 
         return actions
 
@@ -262,16 +261,19 @@ class Board:
             # Check if input action matches an available action
             if action.actionType == move.actionType and action.piece == piece and action.pos == move.pos:
                 return True
-        return True # Temp
+        return False
 
     def isValidAction(self, piece, act):
         return self.isValidPieceAction(piece, act) and self.noCollisions(act)
 
     def noCollisions(self, act):
         # Validate move, check if piece collides with another piece of same colour anywhere, if another piece in between path
+        destPos = act.pos
+        if destPos.rank < 0 or destPos.rank >= 8 or destPos.file < 0 or destPos.file >= 8:
+            return False
         
-        # Check if act.pos contains piece of same colour
-        destPiece = self.pieces[act.pos.rank][act.pos.file]
+        # Check if destPos contains piece of same colour
+        destPiece = self.pieces[destPos.rank][destPos.file]
         if destPiece.colour == act.piece.colour:
             return False
         
@@ -283,17 +285,17 @@ class Board:
         file = act.piece.pos.file
         changeRank = 0
         changeFile = 0
-        if act.pos.rank < act.piece.pos.rank: # Up
+        if destPos.rank < act.piece.pos.rank: # Up
             changeRank = -1
-        elif act.pos.rank > act.piece.pos.rank: # Down
+        elif destPos.rank > act.piece.pos.rank: # Down
             changeRank = 1
-        if act.pos.file < act.piece.pos.file: # Left
+        if destPos.file < act.piece.pos.file: # Left
             changeFile = -1
-        elif act.pos.file > act.piece.pos.file: # Right
+        elif destPos.file > act.piece.pos.file: # Right
             changeFile = 1
 
         # Calc Steps
-        steps = max(abs(act.piece.pos.rank-act.pos.rank), abs(act.piece.pos.file-act.pos.file))
+        steps = max(abs(act.piece.pos.rank-destPos.rank), abs(act.piece.pos.file-destPos.file))
 
         # For each step, check if a piece is in the way
         for i in range(steps-1):
@@ -305,7 +307,7 @@ class Board:
 
         return True
 
-    def aiGameScore(self):
+    def gameScore(self, playerColour : Colour):
         # Heuristic value if game not done, or final game value if game is done
         # TODO: account for doubled, blocked, isolated pawns (-0.5 each for AI side, +0.5 each for player side)
         # TODO: account for the number of legal actions (+0.1 each for AI side, -0.1 each for player side)
@@ -314,7 +316,7 @@ class Board:
             if piece.chessman not in pieceDiff:
                 pieceDiff[piece.chessman] = 0
             
-            if piece.colour == self.getAiColour():
+            if piece.colour == playerColour:
                 pieceDiff[piece.chessman] += 1
             else:
                 pieceDiff[piece.chessman] -= 1
@@ -342,4 +344,4 @@ class Board:
 
     def isFinished(self):
         # If no actions left (either white or black has won)
-        return True if len(self.getActions(self.playerColour)) == 0 or len(self.getActions(self.getAiColour)) == 0 else False
+        return True if len(self.getActions(Colour.WHITE)) == 0 or len(self.getActions(Colour.BLACK)) == 0 else False

@@ -3,7 +3,7 @@ from constants import *
 from board import *
 from action import *
 
-def maxAlphaBeta(board, alpha, beta, depth):
+def maxAlphaBeta(board, alpha, beta, depth, aiColour):
     '''
     Get maximum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -13,11 +13,11 @@ def maxAlphaBeta(board, alpha, beta, depth):
     :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
-        return board.aiGameScore(), Action()
+        return board.gameScore(aiColour), Action()
     
     optimalVal = None
     optimalAct = None
-    for act in board.getActions(board.getAiColour()):
+    for act in board.getActions(aiColour):
         childVal, childAct = minAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
         if optimalVal is None or childVal > optimalVal:
             optimalVal = childVal
@@ -29,7 +29,7 @@ def maxAlphaBeta(board, alpha, beta, depth):
 
     return optimalVal, optimalAct
 
-def minAlphaBeta(board, alpha, beta, depth):
+def minAlphaBeta(board, alpha, beta, depth, aiColour):
     '''
     Get minimum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -39,11 +39,11 @@ def minAlphaBeta(board, alpha, beta, depth):
     :return: optimal value and Action instance
     '''
     if depth <= 0 or board.isFinished():
-      return board.aiGameScore(), Action()
+      return board.gameScore(aiColour), Action()
     
     optimalVal = None
     optimalAct = None
-    for act in board.getActions(board.getPlayerColour()):
+    for act in board.getActions(Colour.BLACK if aiColour == Colour.WHITE else Colour.WHITE):
         childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
         if optimalVal is None or childVal < optimalVal:
             optimalVal = childVal
@@ -55,10 +55,10 @@ def minAlphaBeta(board, alpha, beta, depth):
 
     return optimalVal, optimalAct
 
-def startMininmax(board):
+def startMininmax(board, aiColour):
     '''
     Estimate optimal value and action for ai using fixed depth.
     :input board: Board instance
     :return: optimal value and Action instance
     '''
-    value, action = maxAlphaBeta(board, -math.inf, math.inf, DEPTH)
+    value, action = maxAlphaBeta(board, -math.inf, math.inf, DEPTH, aiColour)
