@@ -52,6 +52,9 @@ class Piece:
     def __repr__(self) -> str:
         return self.__str__()
 
+    def __eq__(self, other):
+        return self.chessman == other.chessman and self.colour == other.colour and self.pos == other.pos
+
     def getASCII(self):
         if self.chessman == Chessman.PAWN:
             c =  'p'

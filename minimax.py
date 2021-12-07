@@ -18,10 +18,10 @@ def maxAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour):
     optimalVal = None
     optimalAct = None
     for act in board.getActions(aiColour):
-        childVal, childAct = minAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
+        childVal, childAct = minAlphaBeta(board.childBoard(act), alpha, beta, depth-1, aiColour)
         if optimalVal is None or childVal > optimalVal:
             optimalVal = childVal
-            optimalAct = childAct
+            optimalAct = act
 
         if childVal >= beta:
             return childVal, childAct
@@ -44,10 +44,10 @@ def minAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour):
     optimalVal = None
     optimalAct = None
     for act in board.getActions(board.getOpponentColour(aiColour)):
-        childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
+        childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1, aiColour)
         if optimalVal is None or childVal < optimalVal:
             optimalVal = childVal
-            optimalAct = childAct
+            optimalAct = act
 
         if childVal <= alpha:
             return childVal, childAct
@@ -61,4 +61,4 @@ def startMininmax(board : Board, aiColour : Colour):
     :input board: Board instance
     :return: optimal value and Action instance
     '''
-    value, action = maxAlphaBeta(board, -math.inf, math.inf, DEPTH, aiColour)
+    return maxAlphaBeta(board, -math.inf, math.inf, DEPTH, aiColour)

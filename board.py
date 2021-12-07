@@ -144,7 +144,7 @@ class Board:
 
         return fen
 
-    def getOpponentColour(playerColour : Colour):
+    def getOpponentColour(self, playerColour : Colour):
         return Colour.BLACK if playerColour == Colour.WHITE else Colour.WHITE
 
     def getPiece(self, *args) -> Piece:
@@ -183,7 +183,7 @@ class Board:
                     pieces.append(piece)
         return pieces
 
-    def performAction(self, action : Action) -> bool:
+    def performAction(self, action : Action, skipValidity : bool = False) -> bool:
         srcPos = action.piece.pos
         destPos = action.pos
 
@@ -193,8 +193,9 @@ class Board:
             raise ValueError(f"destPos File out of range: Please give a value between {0}-{8}. Value given: {destPos.file}")
 
         piece = self.pieces[srcPos.rank][srcPos.file]
-        if not self.isValidAction(piece, action):
-            return False
+        if not skipValidity:
+            if not self.isValidAction(piece, action):
+                return False
 
         capture = False
 
@@ -251,14 +252,16 @@ class Board:
         actions = []
         directionsNonDiag = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         directionsDiag = [[1, 1], [-1, -1], [1, -1], [-1, 1]]
+        srcRank = piece.pos.rank + 1
+        srcFile = piece.pos.file + 1
 
         if piece.chessman == Chessman.PAWN:
             # TODO: add En Passant
             # TODO: add promotion to action if at the end of board
             advanceDirection = 1 if piece.colour == Colour.WHITE else -1
-            actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*1, piece.pos.file)))
+            actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + advanceDirection*1, srcFile)))
             if piece.pos.rank == 1 or piece.pos.rank == 6:
-                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*2, piece.pos.file)))
+                actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + advanceDirection*2, srcFile)))
         if piece.chessman == Chessman.ROOK or piece.chessman == Chessman.BISHOP or piece.chessman == Chessman.QUEEN:
             # TODO: only add actions for Chessman.ROOK when the king castles
             directions = []
@@ -268,16 +271,16 @@ class Board:
                 directions += directionsDiag
             for dir in directions:
                 for i in range(1, 8): # horizontally or vertically up to 8
-                    actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + i*dir[0], piece.pos.file + i*dir[1])))
+                    actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + i*dir[0], srcFile + i*dir[1])))
         if piece.chessman == Chessman.KNIGHT:
             directions = directionsDiag
             for dir in directions: # L shape
-                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + 2*dir[0], piece.pos.file + dir[0])))
-                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + dir[0], piece.pos.file + 2*dir[0])))
+                actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + 2*dir[0], srcFile + dir[0])))
+                actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + dir[0], srcFile + 2*dir[0])))
         if piece.chessman == Chessman.KING:
             directions = directionsNonDiag + directionsDiag
             for dir in directions:
-                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + dir[0], piece.pos.file + dir[1])))
+                actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + dir[0], srcFile + dir[1])))
 
         return actions
 
@@ -336,21 +339,22 @@ class Board:
         # Heuristic value if game not done, or final game value if game is done
         # TODO: account for doubled, blocked, isolated pawns (-0.5 each for AI side, +0.5 each for player side)
         pieceDiff = {}
-        for piece in self.pieces:
-            if piece.chessman not in pieceDiff:
-                pieceDiff[piece.chessman] = 0
-            
-            if piece.colour == playerColour:
-                pieceDiff[piece.chessman] += 1
-            else:
-                pieceDiff[piece.chessman] -= 1
+        for row in self.pieces:
+            for piece in row:
+                if piece.chessman not in pieceDiff:
+                    pieceDiff[piece.chessman] = 0
+                
+                if piece.colour == playerColour:
+                    pieceDiff[piece.chessman] += 1
+                else:
+                    pieceDiff[piece.chessman] -= 1
         
         value = 0
         for chessman in pieceDiff:
             value += ChessmanValue[chessman]*pieceDiff[chessman]
 
         # Compare number of legal actions
-        value += 0.1*self.getActions(playerColour) - 0.1*self.getActions(self.getOpponentColour(playerColour))
+        value += 0.1*len(self.getActions(playerColour)) - 0.1*len(self.getActions(self.getOpponentColour(playerColour)))
 
         return value
 
@@ -368,11 +372,15 @@ class Board:
         childBoard = Board(self.genFen(), self.prevFens) 
         # Apply action on childBoard
         try:
-            childBoard.performAction(action)
+            childBoard.performAction(action, skipValidity=True)
             return childBoard
         except Exception as e:
             raise e
 
     def isFinished(self):
-        # If no actions left (either white or black has won)
-        return True if len(self.getActions(Colour.WHITE)) == 0 or len(self.getActions(Colour.BLACK)) == 0 else False
+        # If no actions left, return winner
+        if len(self.getActions(Colour.WHITE)) == 0:
+            return Colour.BLACK
+        elif len(self.getActions(Colour.BLACK)) == 0:
+            return Colour.WHITE
+        return False

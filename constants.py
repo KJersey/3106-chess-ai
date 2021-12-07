@@ -1,6 +1,6 @@
 import enum
 
-DEPTH = 4
+DEPTH = 3
 
 # Enables UNICODE Chess Characters
 UNICODE = True  
@@ -173,6 +173,9 @@ class Pos():
 
     def __repr__(self) -> str:
         return self.__str__()
+
+    def __eq__(self, other):
+        return self.rank == other.rank and self.file == other.file
 
 class ActionType(enum.Enum):
     NO_ACTION   = enum.auto()
