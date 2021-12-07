@@ -3,7 +3,7 @@ from constants import *
 from board import *
 from action import *
 
-def maxAlphaBeta(board, alpha, beta, depth, aiColour):
+def maxAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour):
     '''
     Get maximum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -29,7 +29,7 @@ def maxAlphaBeta(board, alpha, beta, depth, aiColour):
 
     return optimalVal, optimalAct
 
-def minAlphaBeta(board, alpha, beta, depth, aiColour):
+def minAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour):
     '''
     Get minimum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -43,7 +43,7 @@ def minAlphaBeta(board, alpha, beta, depth, aiColour):
     
     optimalVal = None
     optimalAct = None
-    for act in board.getActions(Colour.BLACK if aiColour == Colour.WHITE else Colour.WHITE):
+    for act in board.getActions(board.getOpponentColour(aiColour)):
         childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1)
         if optimalVal is None or childVal < optimalVal:
             optimalVal = childVal
@@ -55,7 +55,7 @@ def minAlphaBeta(board, alpha, beta, depth, aiColour):
 
     return optimalVal, optimalAct
 
-def startMininmax(board, aiColour):
+def startMininmax(board : Board, aiColour : Colour):
     '''
     Estimate optimal value and action for ai using fixed depth.
     :input board: Board instance

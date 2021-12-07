@@ -144,6 +144,9 @@ class Board:
 
         return fen
 
+    def getOpponentColour(playerColour : Colour):
+        return Colour.BLACK if playerColour == Colour.WHITE else Colour.WHITE
+
     def getPiece(self, *args) -> Piece:
         if len(args) == 0:
             raise ValueError(f"Invalid number of args, given {args}")
@@ -244,7 +247,7 @@ class Board:
 
         return True
 
-    def getPieceActions(self, piece): # TODO: fill in
+    def getPieceActions(self, piece):
         actions = []
         directionsNonDiag = [[1, 0], [-1, 0], [0, 1], [0, -1]]
         directionsDiag = [[1, 1], [-1, -1], [1, -1], [-1, 1]]
@@ -333,7 +336,6 @@ class Board:
     def gameScore(self, playerColour : Colour):
         # Heuristic value if game not done, or final game value if game is done
         # TODO: account for doubled, blocked, isolated pawns (-0.5 each for AI side, +0.5 each for player side)
-        # TODO: account for the number of legal actions (+0.1 each for AI side, -0.1 each for player side)
         pieceDiff = {}
         for piece in self.pieces:
             if piece.chessman not in pieceDiff:
@@ -347,6 +349,10 @@ class Board:
         value = 0
         for chessman in pieceDiff:
             value += ChessmanValue[chessman]*pieceDiff[chessman]
+
+        # Compare number of legal actions
+        value += 0.1*self.getActions(playerColour) - 0.1*self.getActions(self.getOpponentColour(playerColour))
+
         return value
 
     def getActions(self, playerColour : Colour):
@@ -354,7 +360,7 @@ class Board:
         actions = []
         for p in self.getPieces(playerColour):
             for act in self.getPieceActions(p):
-                if self.isValidMove(act):
+                if self.noCollisions(act):
                     actions.append(act)
         return actions
 
