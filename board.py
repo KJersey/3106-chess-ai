@@ -246,13 +246,36 @@ class Board:
 
     def getPieceActions(self, piece): # TODO: fill in
         actions = []
-        advanceDirection = 1 if piece.colour == Colour.WHITE else -1
+        directionsNonDiag = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+        directionsDiag = [[1, 1], [-1, -1], [1, -1], [-1, 1]]
+
         if piece.chessman == Chessman.PAWN:
             # TODO: add En Passant
             # TODO: add promotion to action if at the end of board
+            advanceDirection = 1 if piece.colour == Colour.WHITE else -1
             actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*1, piece.pos.file)))
             if piece.pos.rank == 1 or piece.pos.rank == 6:
                 actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + advanceDirection*2, piece.pos.file)))
+        if piece.chessman == Chessman.ROOK or piece.chessman == Chessman.BISHOP or piece.chessman == Chessman.QUEEN:
+            # TODO: only add actions for Chessman.ROOK when the king castles
+            directions = []
+            if piece.chessman != Chessman.BISHOP:
+                directions += directionsNonDiag
+            if piece.chessman != Chessman.ROOK:
+                directions += directionsDiag
+            for dir in directions:
+                for i in range(1, 8): # horizontally or vertically up to 8
+                    actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + i*dir[0], piece.pos.file + i*dir[1])))
+        if piece.chessman == Chessman.KNIGHT:
+            directions = directionsDiag
+            # L shape
+            for dir in directions:
+                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + 2*dir[0], piece.pos.file + dir[0])))
+                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + dir[0], piece.pos.file + 2*dir[0])))
+        if piece.chessman == Chessman.KING:
+            directions = directionsNonDiag + directionsDiag
+            for dir in directions:
+                actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + dir[0], piece.pos.file + dir[1])))
 
         return actions
 
