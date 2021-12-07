@@ -271,8 +271,7 @@ class Board:
                     actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + i*dir[0], piece.pos.file + i*dir[1])))
         if piece.chessman == Chessman.KNIGHT:
             directions = directionsDiag
-            # L shape
-            for dir in directions:
+            for dir in directions: # L shape
                 actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + 2*dir[0], piece.pos.file + dir[0])))
                 actions.append(Action(ActionType.MOVE, piece, Pos(piece.pos.rank + dir[0], piece.pos.file + 2*dir[0])))
         if piece.chessman == Chessman.KING:
