@@ -368,8 +368,11 @@ class Board:
         # Initialize new board starting from same state
         childBoard = Board(self.genFen(), self.prevFens) 
         # Apply action on childBoard
-        childBoard.performAction(action)
-        return childBoard
+        try:
+            childBoard.performAction(action)
+            return childBoard
+        except Exception as e:
+            raise e
 
     def isFinished(self):
         # If no actions left (either white or black has won)
