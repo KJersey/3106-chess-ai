@@ -23,7 +23,7 @@ def getPlayerAction(b : Board, playerColour : Colour):
     srcPieceStr = input("Enter piece to move: ")
     srcPiece = b.getPiece(srcPieceStr)
     if srcPiece.colour != playerColour:
-        raise ValueError(f"Piece located at {srcPiece} is not valid. Please choose a piece of colour {playerColourStr}.")
+        raise ValueError(f"Piece located at {srcPieceStr} is not valid. Please choose a piece of colour {playerColourStr}.")
     destStr = input(f"Enter where to move piece at {srcPieceStr}: ")
     action = Action(ActionType.MOVE, srcPiece, Pos(destStr))
     # TODO: adjust ActionType and chessman in returned action
