@@ -53,7 +53,7 @@ class Board:
 
         self.currentPlayer = Colour.WHITE if fields[1] == 'w' else Colour.BLACK
         self.castleRights = CastleRights('K' in fields[2], 'Q' in fields[2], 'k' in fields[2], 'q' in fields[2])
-        self.enPassantTarget = fields[3]
+        self.enPassantTarget = None if fields[3] == '-' else Pos(fields[3])
         self.halfMove = int(fields[4])
         self.fullTurn = int(fields[5])
         self.prevFens = prevFens
@@ -97,6 +97,20 @@ class Board:
                 row.append(Piece())
             self.pieces.append(row)
 
+    def run(self, whiteMove, blackMove) -> None:
+        while True:
+            print(self)
+            if (self.currentPlayer == Colour.WHITE):
+                whiteMove(self, Colour.WHITE)
+            else:
+                blackMove(self, Colour.BLACK)
+
+            print(self.genFen())
+
+            if self.isFinished():
+                break
+
+
     def genFen(self) -> str:
         fen = ""
 
@@ -136,7 +150,7 @@ class Board:
         fen += cr + ' '
 
         if not self.enPassantTarget is None:
-            fen += self.enPassantTarget + ' '
+            fen += str(self.enPassantTarget) + ' '
         else:
             fen += '- '
 
@@ -205,11 +219,15 @@ class Board:
                 return False
 
             self.pieces[srcPos.rank][srcPos.file] = Piece(Chessman.EMPTY, Colour.EMPTY, Pos(srcPos.rank + 1, srcPos.file + 1))
+
+            if not self.pieces[destPos.rank][destPos.file].chessman == Chessman.EMPTY:
+                capture = True
+
             self.pieces[destPos.rank][destPos.file] = piece
             piece.pos = destPos
 
-            if piece.chessman == Chessman.PAWN and destPos.rank - srcPos.rank == 2:
-                self.enPassantTarget = str(Pos(destPos.rank, destPos.file + 1))
+            if piece.chessman == Chessman.PAWN and abs(destPos.rank - srcPos.rank) == 2:
+                self.enPassantTarget = Pos(destPos.rank + (0 if self.currentPlayer == Colour.WHITE else 2), destPos.file + 1)
             else:
                 self.enPassantTarget = None
 
@@ -256,8 +274,6 @@ class Board:
         srcFile = piece.pos.file + 1
 
         if piece.chessman == Chessman.PAWN:
-            # TODO: add En Passant
-            # TODO: add promotion to action if at the end of board
             advanceDirection = 1 if piece.colour == Colour.WHITE else -1
             actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + advanceDirection*1, srcFile)))
             if piece.pos.rank == 1 or piece.pos.rank == 6:
@@ -271,7 +287,11 @@ class Board:
                 directions += directionsDiag
             for dir in directions:
                 for i in range(1, 8): # horizontally or vertically up to 8
-                    actions.append(Action(ActionType.MOVE, piece, Pos(srcRank + i*dir[0], srcFile + i*dir[1])))
+                    action = Action(ActionType.MOVE, piece, Pos(srcRank + i*dir[0], srcFile + i*dir[1]))
+                    if not self.noCollisions(action):
+                        break
+                    actions.append(action)
+
         if piece.chessman == Chessman.KNIGHT:
             directions = directionsDiag
             for dir in directions: # L shape
@@ -308,6 +328,10 @@ class Board:
         if act.piece.chessman == Chessman.KNIGHT:
             # Will hop over all pieces inside of path
             return True
+
+        # Pawns cannot capture forwards
+        if act.piece.chessman == Chessman.PAWN and not self.pieces[destPos.rank][destPos.file].chessman == Chessman.EMPTY:
+            return False
 
         rank = act.piece.pos.rank
         file = act.piece.pos.file

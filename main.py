@@ -3,34 +3,16 @@ from minimax import *
 
 def main():
     b = Board()
-    aiColour = Colour.BLACK
-    playerColour = Colour.WHITE
-    winner = False
-    while not winner:
-        if (b.currentPlayer == playerColour):
-            print(f"\nPlayer ({getColourString(playerColour)}) turn:\n"+str(b))
-            playerMove(b, playerColour)
-        winner = b.isFinished()
-        if winner:
-            break
-
-        if (b.currentPlayer == aiColour):
-            print(f"\nAI ({getColourString(aiColour)}) turn:\n"+str(b))
-            aiMove(b, aiColour)
-        winner = b.isFinished()
-        if winner:
-            break
-    print(f"The winner is {getColourString(winner)}!")
+    b.run(aiMove, playerMove)
 
 def playerMove(b : Board, playerColour : Colour):
-  flag = True
-  while flag:
+  while True:
     try:
         action = getPlayerAction(b, playerColour)
         print(action)
         status = b.performAction(action)
         if status:
-            flag = False
+            break
         else:
             print("Could not perform action. Please try a different one.")
     except ValueError as e:
