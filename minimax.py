@@ -79,6 +79,6 @@ def startMininmax(board : Board, aiColour : Colour, maxTime : int):
             break
 
 
-    print(f"Took {time.time() - startTime}s and went to a depth of {depth}!")
+    print(f"Searched to a depth of {depth}!")
 
     return v, a
