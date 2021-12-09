@@ -48,4 +48,7 @@ def getColourString(colour : Colour):
     return "none"
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Game exited by user!")

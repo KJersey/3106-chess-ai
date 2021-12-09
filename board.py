@@ -379,10 +379,23 @@ class Board:
         
         value = 0
         for chessman in pieceDiff:
-            value += ChessmanValue[chessman]*pieceDiff[chessman]
+            value += ChessmanValue[chessman] * pieceDiff[chessman]
+
+        doubled = 0
+        # TODO: Calc doubled
+
+        blocked = 0
+        # TODO: Calc blocked
+
+        isolated = 0
+        # TODO: Calc isolated
+
+        value -= 0.5 * (doubled + blocked + isolated)
 
         # Compare number of legal actions
-        value += 0.1*len(self.getActions(playerColour)) - 0.1*len(self.getActions(self.getOpponentColour(playerColour)))
+        mobility = len(self.getActions(playerColour)) - len(self.getActions(self.getOpponentColour(playerColour)))
+
+        value += 0.1 * mobility
 
         return value
 

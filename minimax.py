@@ -75,7 +75,7 @@ def startMininmax(board : Board, aiColour : Colour, maxTime : int):
         try:
             v, a = maxAlphaBeta(board, -math.inf, math.inf, depth, aiColour, startTime, maxTime)
             depth += 1
-        except:
+        except Exception:
             break
 
 
