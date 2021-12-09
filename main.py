@@ -35,7 +35,7 @@ def aiMove(b : Board, aiColour : Colour):
     b.performAction(action, skipValidity=True)
 
 def getAiAction(b : Board, aiColour : Colour):
-    value, action = startMininmax(b, aiColour)
+    value, action = startMininmax(b, aiColour, 1)
     print(action)
     print("Action value:", value)
     return action
