@@ -139,6 +139,7 @@ def heuristic(board : chess.Board):
     for _ in board.legal_moves:
         v += 0.1
 
+    # Perform a null move to check how many moves the opponent has in the current position
     childBoard = board.copy()
     childBoard.push(chess.Move.null())
 
