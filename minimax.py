@@ -3,6 +3,9 @@ import time
 
 import chess
  
+class TimeoutException(Exception):
+    pass
+
 def maxAlphaBeta(board : chess.Board, player : chess.Color, alpha, beta, depth, startTime : int, maxTime : int):
     '''
     Get maximum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
@@ -13,7 +16,7 @@ def maxAlphaBeta(board : chess.Board, player : chess.Color, alpha, beta, depth, 
     :return: optimal value and Action instance
     '''
     if time.time() - startTime > maxTime:
-        raise Exception("Out of time")
+        raise TimeoutException("Out of time")
 
     if depth <= 0:
         return heuristic(board), None
@@ -55,7 +58,7 @@ def minAlphaBeta(board : chess.Board, player : chess.Color, alpha, beta, depth, 
     :return: optimal value and Action instance
     '''
     if (time.time() - startTime) > maxTime:
-        raise Exception("Out of time")
+        raise TimeoutException("Out of time")
 
     if depth <= 0:
         return heuristic(board), None
@@ -97,7 +100,7 @@ def startMininmax(board : chess.Board, player : chess.Color, maxTime : int):
         try:
             v, m = maxAlphaBeta(board, player, -math.inf, math.inf, depth, startTime, maxTime)
             depth += 1
-        except Exception as e:
+        except TimeoutException:
             break
 
 
