@@ -1,10 +1,9 @@
 import math
 import time
-from constants import *
-from board import *
-from action import *
+
+import chess
  
-def maxAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour, startTime : int, maxTime : int):
+def maxAlphaBeta(board : chess.Board, player : chess.Color, alpha, beta, depth, startTime : int, maxTime : int):
     '''
     Get maximum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -16,24 +15,37 @@ def maxAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour, startTime
     if time.time() - startTime > maxTime:
         raise Exception("Out of time")
 
-    if depth <= 0 or board.isFinished():
-        return board.gameScore(aiColour), Action()
+    if depth <= 0:
+        return heuristic(board), None
+
+    if board.is_game_over():
+        winner = board.outcome().winner
+
+        if winner is None:
+            return 0, None
+
+        if winner == player:
+            return 200, None
+        
+        return -200, None
     
     optimalVal = None
-    optimalAct = None
-    for act in board.getActions(aiColour):
-        childVal, childAct = minAlphaBeta(board.childBoard(act), alpha, beta, depth-1, aiColour, startTime, maxTime)
+    optimalMove = None
+    for move in board.legal_moves:
+        childBoard = board.copy()
+        childBoard.push(move)
+        childVal, _ = minAlphaBeta(childBoard, player, alpha, beta, depth - 1, startTime, maxTime)
         if optimalVal is None or childVal > optimalVal:
             optimalVal = childVal
-            optimalAct = act
+            optimalMove = move
 
         if childVal >= beta:
-            return childVal, childAct
+            return childVal, optimalMove
         alpha = max(alpha, childVal)
 
-    return optimalVal, optimalAct
+    return optimalVal, optimalMove
 
-def minAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour, startTime : int, maxTime : int):
+def minAlphaBeta(board : chess.Board, player : chess.Color, alpha, beta, depth, startTime : int, maxTime : int):
     '''
     Get minimum value of child nodes. Based on pseuodocode provided from class for alpha-beta pruning.
     :input board: Board instance
@@ -45,24 +57,34 @@ def minAlphaBeta(board : Board, alpha, beta, depth, aiColour : Colour, startTime
     if (time.time() - startTime) > maxTime:
         raise Exception("Out of time")
 
-    if depth <= 0 or board.isFinished():
-      return board.gameScore(aiColour), Action()
-    
+    if depth <= 0:
+        return heuristic(board), None
+
+    if board.is_game_over():
+        winner = board.outcome().winner
+
+        if winner == player:
+            return -200, None
+        
+        return 200, None
+
     optimalVal = None
-    optimalAct = None
-    for act in board.getActions(board.getOpponentColour(aiColour)):
-        childVal, childAct = maxAlphaBeta(board.childBoard(act), alpha, beta, depth-1, aiColour, startTime, maxTime)
+    optimalMove = None
+    for move in board.legal_moves:
+        childBoard = board.copy()
+        childBoard.push(move)
+        childVal, _ = maxAlphaBeta(childBoard, player, alpha, beta, depth - 1, startTime, maxTime)
         if optimalVal is None or childVal < optimalVal:
             optimalVal = childVal
-            optimalAct = act
+            optimalMove = move
 
         if childVal <= alpha:
-            return childVal, childAct
+            return childVal, optimalMove
         beta = min(beta, childVal)
 
-    return optimalVal, optimalAct
+    return optimalVal, optimalMove
 
-def startMininmax(board : Board, aiColour : Colour, maxTime : int):
+def startMininmax(board : chess.Board, player : chess.Color, maxTime : int):
     '''
     Estimate optimal value and action for ai using varied depth.
     :input board: Board instance
@@ -73,12 +95,54 @@ def startMininmax(board : Board, aiColour : Colour, maxTime : int):
     depth = 1
     while True:
         try:
-            v, a = maxAlphaBeta(board, -math.inf, math.inf, depth, aiColour, startTime, maxTime)
+            v, m = maxAlphaBeta(board, player, -math.inf, math.inf, depth, startTime, maxTime)
             depth += 1
-        except Exception:
+        except Exception as e:
             break
 
 
-    print(f"Searched to a depth of {depth}!")
+    print(f"Searched to a depth of {depth} with score {v}!")
 
-    return v, a
+    return m
+
+def heuristic(board : chess.Board):
+    v = 0
+
+    for _ in board.pieces(chess.QUEEN, board.turn):
+        v += 9
+    for _ in board.pieces(chess.QUEEN, not board.turn):
+        v -= 9
+
+    for _ in board.pieces(chess.ROOK, board.turn):
+        v += 5
+    for _ in board.pieces(chess.ROOK, not board.turn):
+        v -= 5
+
+    for _ in board.pieces(chess.BISHOP, board.turn):
+        v += 3
+    for _ in board.pieces(chess.BISHOP, not board.turn):
+        v -= 3
+
+    for _ in board.pieces(chess.KNIGHT, board.turn):
+        v += 3
+    for _ in board.pieces(chess.KNIGHT, not board.turn):
+        v -= 3
+
+    for _ in board.pieces(chess.PAWN, board.turn):
+        v += 1
+    for _ in board.pieces(chess.PAWN, not board.turn):
+        v -= 1
+
+    for _ in board.legal_moves:
+        v += 0.1
+
+    childBoard = board.copy()
+    childBoard.push(chess.Move.null())
+
+    for _ in childBoard.legal_moves:
+        v -= 0.1
+
+    if board.turn:
+        return -v
+
+    return v

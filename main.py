@@ -1,54 +1,49 @@
-from board import *
+import chess
+
 from minimax import *
 
 def main():
-    b = Board()
-    b.run(aiMove, playerMove)
+    b = chess.Board()
 
-def playerMove(b : Board, playerColour : Colour):
-  while True:
-    try:
-        action = getPlayerAction(b, playerColour)
-        print(action)
-        status = b.performAction(action)
-        if status:
+    whiteMove = playerMove
+    blackMove = aiMove
+
+    while True:
+        print(b.transform(chess.flip_vertical).transform(chess.flip_horizontal))
+        whiteMove(b, chess.Color)
+        print()
+
+        if b.is_game_over():
             break
-        else:
-            print("Could not perform action. Please try a different one.")
-    except ValueError as e:
-        print(e)
 
-def getPlayerAction(b : Board, playerColour : Colour):
-    playerColourStr = getColourString(playerColour)
-    srcPieceStr = input("Enter piece to move: ")
-    srcPiece = b.getPiece(srcPieceStr)
-    if srcPiece.colour != playerColour:
-        raise ValueError(f"Piece located at {srcPieceStr} is not valid. Please choose a piece of colour {playerColourStr}.")
-    destStr = input(f"Enter where to move piece at {srcPieceStr}: ")
-    action = Action(ActionType.MOVE, srcPiece, Pos(destStr))
-    # TODO: adjust ActionType and chessman in returned action
-    return action
+        print(b)
+        blackMove(b, chess.Color)
+        print()
+        if b.is_game_over():
+            break
 
-def aiMove(b : Board, aiColour : Colour):
-    print("The AI is thinking...")
-    action = getAiAction(b, aiColour)
-    b.performAction(action, skipValidity=True)
+    winner = b.outcome().winner
+    if winner is None:
+        print("Stalemate!")
+    elif winner:
+        print("White Won!")
+    else:
+        print("Black Won!")
 
-def getAiAction(b : Board, aiColour : Colour):
-    value, action = startMininmax(b, aiColour, 10)
-    print(action)
-    print("Action value:", value)
-    return action
+def playerMove(board, _ : chess.Color):
+    moved = False
 
-def getColourString(colour : Colour):
-    if colour == Colour.BLACK:
-        return "black"
-    elif colour == Colour.WHITE:
-        return "white"
-    return "none"
+    while not moved:
+        try:
+            board.push_san(input())
+            moved = True
+        except Exception:
+            print("Illegal Move")
+
+def aiMove(board, player : chess.Color):
+    move = startMininmax(board, player, 10)
+    board.push(move)
+    print(move)
 
 if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("Game exited by user!")
+    main()
